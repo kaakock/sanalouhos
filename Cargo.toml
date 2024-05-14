@@ -1,0 +1,13 @@
+[package]
+name = "sanalouhos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+csv = "1"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3

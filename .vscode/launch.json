@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Rust Program with Command Line Argument",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/sanalouhos",
+            "args": ["/Users/kaarlokock/projects/sanalouhos/sanalista.csv", "/Users/kaarlokock/projects/sanalouhos/board4.txt", "1"],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "cargo": {
+                "args": ["run"]
+            },
+            "sourceLanguages": ["rust"]
+        }
+    ]
+}
