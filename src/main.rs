@@ -289,8 +289,14 @@ fn main() {
     let res = find_solution(word_vectors, &solution, &mut [false; 30], max_count);
     for i in 0..res.len() {
         println!("Result #{:?}", i);
-        println!("{:?}", res[i]);
         for w in res[i].clone() {
+            for m_idx in 0..matches_1d.len() {
+                if w == matches_1d[m_idx] {
+                    println!(" ## {} ## ", matches[m_idx].word);
+                    break;
+                }
+            }
+            
             print_board(&board, w);
         }
         print!("\n");

@@ -27,8 +27,6 @@ pub fn get_neighbors(current: &Pos, visited: &Vec<Vec<bool>>) -> Vec<Pos> {
 
 #[cfg(test)]
 mod tests {
-    use crate::common::print_visited;
-
     use super::*;
 
     fn build_visited(rows: usize, cols: usize) -> Vec<Vec<bool>> {
