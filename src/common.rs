@@ -2,8 +2,8 @@ use core::panic;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Pos {
-    pub x: i32,
-    pub y: i32,
+    pub x: usize,
+    pub y: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq)]

@@ -6,7 +6,7 @@ use std::env;
 use std::error::Error;
 use std::fs::{read_to_string, File};
 use std::path::Path;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use common::{Pos, Word, Word1D};
 use neighbors::get_neighbors;
@@ -117,8 +117,8 @@ fn find_words_starting_from(
 ) -> Vec<Word> {
     let mut visited: Vec<Vec<bool>> = board.iter().map(|row| vec![false; row.len()]).collect();
     // Set starting position to visited
-    let xusize = usize::try_from(start_pos.x).unwrap();
-    let yusize = usize::try_from(start_pos.y).unwrap();
+    let xusize = start_pos.x;
+    let yusize = start_pos.y;
     visited[yusize][xusize] = true;
     let mut path: Vec<Pos> = Vec::new();
     path.push(start_pos.clone());
@@ -141,7 +141,7 @@ fn combine_results(a: &[Vec<Word1D>], b: &[Vec<Word1D>]) -> Vec<Vec<Word1D>> {
 }
 
 fn intersects(a: &Word1D, b: &Word1D) -> bool {
-    return (a & b) > 0 
+    return (a & b) > 0;
 }
 
 fn add(a: &Word1D, b: &Word1D) -> Word1D {
@@ -242,10 +242,7 @@ fn main() {
     for j in 0..board.len() {
         let row = &board[j];
         for i in 0..row.len() {
-            let pos = Pos {
-                x: i32::try_from(i).unwrap(),
-                y: i32::try_from(j).unwrap(),
-            };
+            let pos = Pos { x: i, y: j };
             let mut inner_matches = find_words_starting_from(&board, &words, pos);
             matches.append(&mut inner_matches);
         }
@@ -259,8 +256,8 @@ fn main() {
     for word in matches.clone() {
         let mut current = u32::MIN;
         for pos in word.path {
-            let x = usize::try_from(pos.x).unwrap();
-            let y = usize::try_from(pos.y).unwrap();
+            let x = pos.x;
+            let y = pos.y;
             let index = get_index(rows, columns, y, x);
             let mask = 1 << index;
             current = current | mask;
@@ -274,7 +271,10 @@ fn main() {
     println!("Words found, {:?}", matches_1d.len());
     let word_search_end = Instant::now();
     let word_search_duration = word_search_end.duration_since(word_search_start);
-    println!("word search took {} milliseconds", word_search_duration.as_millis());
+    println!(
+        "word search took {} milliseconds",
+        word_search_duration.as_millis()
+    );
     let solution: Vec<&Word1D> = Vec::new();
     let res = find_solution(word_vectors, &solution, &u32::MIN, max_count);
     for i in 0..res.len() {
@@ -286,7 +286,7 @@ fn main() {
                     break;
                 }
             }
-            
+
             print_board(&board, w);
         }
         print!("\n");

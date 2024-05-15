@@ -2,21 +2,21 @@ use crate::Pos;
 
 pub fn get_neighbors(current: &Pos, visited: &Vec<Vec<bool>>) -> Vec<Pos> {
     let mut results: Vec<Pos> = Vec::new();
-    for j in -1..2 {
-        let y = current.y + j;
-        for i in -1..2 {
-            let x = current.x + i;
-            if x == 0 && y == 0 {
+    for j in 0..3 {
+        if current.y + j == 0 {
+            continue;
+        }
+        let y = current.y + j - 1;
+        for i in 0..3 {
+            if current.x + i == 0 {
                 continue;
             }
-            if x >= 0
-                && x < visited[0].len().try_into().unwrap()
-                && y >= 0
-                && y < visited.len().try_into().unwrap()
-            {
-                let xusize = usize::try_from(x).unwrap();
-                let yusize = usize::try_from(y).unwrap();
-                if !visited[yusize][xusize] {
+            let x = current.x + i - 1;
+            if i == 1 && j == 1 {
+                continue;
+            }
+            if x < visited[0].len() && y < visited.len() {
+                if !visited[y][x] {
                     results.push(Pos { x, y });
                 }
             }
