@@ -71,7 +71,6 @@ mod tests {
     #[test]
     fn visited() {
         let visited: Vec<Vec<bool>> = vec![vec![true; 2]; 2];
-        print_visited(&visited);
         assert_eq!(0, get_neighbors(&Pos { x: 0, y: 0 }, &visited).len());
         assert_eq!(0, get_neighbors(&Pos { x: 0, y: 1 }, &visited).len());
         assert_eq!(0, get_neighbors(&Pos { x: 1, y: 0 }, &visited).len());

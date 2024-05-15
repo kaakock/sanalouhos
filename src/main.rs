@@ -6,6 +6,7 @@ use std::env;
 use std::error::Error;
 use std::fs::{read_to_string, File};
 use std::path::Path;
+use std::time::{Duration, Instant};
 
 use common::{Pos, Word, Word1D};
 use neighbors::get_neighbors;
@@ -140,39 +141,24 @@ fn combine_results(a: &[Vec<Word1D>], b: &[Vec<Word1D>]) -> Vec<Vec<Word1D>> {
 }
 
 fn intersects(a: &Word1D, b: &Word1D) -> bool {
-    for i in 0..a.len() {
-        let collision = a[i] && b[i];
-        if collision {
-            return true;
-        }
-    }
-    return false;
+    return (a & b) > 0 
 }
 
-fn add(a: &mut Word1D, b: &Word1D) {
-    for i in 0..a.len() {
-        a[i] = a[i] || b[i];
-    }
+fn add(a: &Word1D, b: &Word1D) -> Word1D {
+    return a | b;
 }
 
-fn subtract(a: &mut Word1D, b: &Word1D) {
-    for i in 0..a.len() {
-        if a[i] && b[i] {
-            a[i] = false;
-        } else {
-            a[i] = a[i];
-        }
-    }
+fn is_done(a: &Word1D) -> bool {
+    return u32::MAX >> 2 == *a;
 }
 
 fn find_solution(
     words: Vec<&Word1D>,
     solution: &Vec<&Word1D>,
-    visited: &mut Word1D,
+    visited: &Word1D,
     max_result_count: usize,
 ) -> Vec<Vec<Word1D>> {
-    let is_done = visited.into_iter().all(|x| *x);
-    if is_done {
+    if is_done(&visited) {
         let mut result_vec: Vec<Word1D> = Vec::new();
         for i in solution {
             result_vec.push(**i);
@@ -195,14 +181,13 @@ fn find_solution(
         let mut inner_solution = solution.clone();
         inner_solution.push(&word);
         // Modify visited and add current word to visited
-        add(visited, word);
+        let inner_visited = add(visited, word);
         let res = find_solution(
             words_left.clone(),
             &inner_solution,
-            visited,
+            &inner_visited,
             max_result_count,
         );
-        subtract(visited, word);
         if res.is_empty() {
             continue;
         } else {
@@ -253,6 +238,7 @@ fn main() {
 
     let mut matches: Vec<Word> = Vec::new();
     println!("Searching for all available words for this board");
+    let word_search_start = Instant::now();
     for j in 0..board.len() {
         let row = &board[j];
         for i in 0..row.len() {
@@ -271,12 +257,13 @@ fn main() {
     let rows = board.len();
     let columns = board.get(0).unwrap().len();
     for word in matches.clone() {
-        let mut current = [false; 30];
+        let mut current = u32::MIN;
         for pos in word.path {
             let x = usize::try_from(pos.x).unwrap();
             let y = usize::try_from(pos.y).unwrap();
             let index = get_index(rows, columns, y, x);
-            current[index] = true;
+            let mask = 1 << index;
+            current = current | mask;
         }
         matches_1d.push(current);
     }
@@ -285,8 +272,11 @@ fn main() {
         word_vectors.push(&matches_1d[i]);
     }
     println!("Words found, {:?}", matches_1d.len());
+    let word_search_end = Instant::now();
+    let word_search_duration = word_search_end.duration_since(word_search_start);
+    println!("word search took {} milliseconds", word_search_duration.as_millis());
     let solution: Vec<&Word1D> = Vec::new();
-    let res = find_solution(word_vectors, &solution, &mut [false; 30], max_count);
+    let res = find_solution(word_vectors, &solution, &u32::MIN, max_count);
     for i in 0..res.len() {
         println!("Result #{:?}", i);
         for w in res[i].clone() {

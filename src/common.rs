@@ -12,14 +12,15 @@ pub struct Word {
     pub word: String,
 }
 
-pub type Word1D = [bool; 30];
+pub type Word1D = u32;
 
 pub fn print_board(board: &Vec<Vec<char>>, highlight: Word1D) {
     for j in 0..board.len() {
         let mut row = String::new();
         for i in 0..board[j].len() {
-            let index= get_index(board.len(), board.get(0).unwrap().len(), j, i);
-            let convert_uppercase = highlight[index];
+            let index = get_index(board.len(), board.get(0).unwrap().len(), j, i);
+
+            let convert_uppercase = ((highlight >> index) & 1) == 1;
             let char = board[j][i];
             if convert_uppercase {
                 char.to_uppercase().for_each(|m| row.push(m));
