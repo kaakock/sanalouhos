@@ -149,7 +149,8 @@ fn add(a: &Word1D, b: &Word1D) -> Word1D {
 }
 
 fn is_done(a: &Word1D) -> bool {
-    return u32::MAX >> 2 == *a;
+    // the board is 6x5 = 30 so full board equals 0011...11 as i32
+    return Word1D::MAX >> 2 == *a;
 }
 
 fn find_solution(
@@ -175,12 +176,10 @@ fn find_solution(
         return Vec::new();
     }
     let mut results: Vec<Vec<Word1D>> = Vec::new();
-    words_left.reverse();
     while !words_left.is_empty() {
         let word = words_left.pop().unwrap();
         let mut inner_solution = solution.clone();
         inner_solution.push(&word);
-        // Modify visited and add current word to visited
         let inner_visited = add(visited, word);
         let res = find_solution(
             words_left.clone(),
@@ -196,7 +195,6 @@ fn find_solution(
         if results.len() >= max_result_count {
             break;
         }
-        // Remove current word from list of visited words
     }
     return results;
 }
