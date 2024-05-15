@@ -2,16 +2,15 @@ mod common;
 mod neighbors;
 
 use csv::ReaderBuilder;
-use std::collections::HashSet;
 use std::env;
 use std::error::Error;
 use std::fs::{read_to_string, File};
 use std::path::Path;
 
-use common::{Pos, Word};
+use common::{Pos, Word, Word1D};
 use neighbors::get_neighbors;
 
-use crate::common::{print_board, sort_result};
+use crate::common::{get_index, print_board};
 
 fn read_csv<P: AsRef<Path>>(filename: P) -> Result<Vec<String>, Box<dyn Error>> {
     let file = File::open(filename)?;
@@ -126,13 +125,9 @@ fn find_words_starting_from(
     return res;
 }
 
-fn vector_contains_hashset(vector: &Vec<HashSet<Pos>>, target_hashset: &HashSet<Pos>) -> bool {
-    vector.iter().any(|item| item == target_hashset)
-}
-
 // Function to combine two vectors of solutions keeping only unique results
-fn combine_results(a: &[Vec<Word>], b: &[Vec<Word>]) -> Vec<Vec<Word>> {
-    let mut combined_results: Vec<Vec<Word>> = Vec::new();
+fn combine_results(a: &[Vec<Word1D>], b: &[Vec<Word1D>]) -> Vec<Vec<Word1D>> {
+    let mut combined_results: Vec<Vec<Word1D>> = Vec::new();
 
     // Combine a and b into combined_results
     combined_results.extend_from_slice(a);
@@ -144,60 +139,71 @@ fn combine_results(a: &[Vec<Word>], b: &[Vec<Word>]) -> Vec<Vec<Word>> {
     return combined_results;
 }
 
+fn intersects(a: &Word1D, b: &Word1D) -> bool {
+    for i in 0..a.len() {
+        let collision = a[i] && b[i];
+        if collision {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn add(a: &mut Word1D, b: &Word1D) {
+    for i in 0..a.len() {
+        a[i] = a[i] || b[i];
+    }
+}
+
+fn subtract(a: &mut Word1D, b: &Word1D) {
+    for i in 0..a.len() {
+        if a[i] && b[i] {
+            a[i] = false;
+        } else {
+            a[i] = a[i];
+        }
+    }
+}
+
 fn find_solution(
-    words: &Vec<Word>,
-    solution: &Vec<Word>,
-    dead_ends: &mut Vec<HashSet<Pos>>,
-    done_count: i32,
+    words: Vec<&Word1D>,
+    solution: &Vec<&Word1D>,
+    visited: &mut Word1D,
     max_result_count: usize,
-) -> Vec<Vec<Word>> {
-    let visited: Vec<Pos> = solution.clone().into_iter().flat_map(|w| w.path).collect();
-    let dead_end: HashSet<Pos> = HashSet::from_iter(visited.clone().into_iter());
-    if visited.len() >= done_count.try_into().unwrap() {
-        let printable: Vec<String> = solution.clone().into_iter().map(|w| w.word).collect();
-        println!("Solution found: {:?}", printable.join(", "));
-        return vec![sort_result(solution)];
+) -> Vec<Vec<Word1D>> {
+    let is_done = visited.into_iter().all(|x| *x);
+    if is_done {
+        let mut result_vec: Vec<Word1D> = Vec::new();
+        for i in solution {
+            result_vec.push(**i);
+        }
+        return vec![result_vec];
     }
-    if vector_contains_hashset(&dead_ends, &dead_end) {
-        return Vec::new();
-    }
-    let is_outer_loop = solution.len() == 0;
-    let mut words_left: Vec<Word> = Vec::new();
+    let mut words_left: Vec<&Word1D> = Vec::new();
     for i in 0..words.len() {
-        let collides = words[i]
-            .path
-            .clone()
-            .into_iter()
-            .any(|node| visited.contains(&node));
-        if !collides {
-            words_left.push(words[i].clone());
+        if !intersects(visited, &words[i]) {
+            words_left.push(&words[i]);
         }
     }
     if words_left.len() == 0usize {
-        dead_ends.push(dead_end);
         return Vec::new();
     }
-    let mut results: Vec<Vec<Word>> = Vec::new();
+    let mut results: Vec<Vec<Word1D>> = Vec::new();
     words_left.reverse();
     while !words_left.is_empty() {
         let word = words_left.pop().unwrap();
-        if is_outer_loop {
-            println!("Start word: {:?}", word);
-        }
-        let current_word: Word = word.clone();
         let mut inner_solution = solution.clone();
-        inner_solution.push(current_word);
+        inner_solution.push(&word);
+        // Modify visited and add current word to visited
+        add(visited, word);
         let res = find_solution(
-            &words_left,
+            words_left.clone(),
             &inner_solution,
-            dead_ends,
-            done_count,
+            visited,
             max_result_count,
         );
+        subtract(visited, word);
         if res.is_empty() {
-            if is_outer_loop {
-                println!("Dead end {:?}", inner_solution);
-            }
             continue;
         } else {
             results = combine_results(&results, &res);
@@ -205,6 +211,7 @@ fn find_solution(
         if results.len() >= max_result_count {
             break;
         }
+        // Remove current word from list of visited words
     }
     return results;
 }
@@ -212,9 +219,22 @@ fn find_solution(
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let word_list_path: String = args[1].to_string();
-    let board_path: String = args[2].to_string();
-    let max_count: usize = usize::from_str_radix(&args[3].to_string(), 10).unwrap();
+    let mut word_list_path: String =
+        String::from("/Users/kaarlokock/projects/sanalouhos/sanalista.csv");
+    let mut board_path: String =
+        String::from("/Users/kaarlokock/projects/sanalouhos/board1405.txt");
+    let mut max_count: usize = 1usize;
+
+    if args.len() > 1 {
+        word_list_path = args[1].to_string();
+    }
+
+    if args.len() > 2 {
+        board_path = args[2].to_string();
+    }
+    if args.len() > 3 {
+        max_count = usize::from_str_radix(&args[3].to_string(), 10).unwrap_or_default();
+    }
 
     println!("Searching for {}", word_list_path);
     println!("In file {}", board_path);
@@ -246,15 +266,32 @@ fn main() {
     }
     matches.sort_by_cached_key(|x| x.path.len());
     matches.reverse();
-    println!("Words found, {:?}", words.len());
-    let done_count: i32 = i32::try_from(board.len() * board[0].len()).unwrap();
-    let dead_ends: &mut Vec<HashSet<Pos>> = &mut Vec::new();
-    let res = find_solution(&matches, &Vec::new(), dead_ends, done_count, max_count);
+
+    let mut matches_1d: Vec<Word1D> = Vec::new();
+    let rows = board.len();
+    let columns = board.get(0).unwrap().len();
+    for word in matches.clone() {
+        let mut current = [false; 30];
+        for pos in word.path {
+            let x = usize::try_from(pos.x).unwrap();
+            let y = usize::try_from(pos.y).unwrap();
+            let index = get_index(rows, columns, y, x);
+            current[index] = true;
+        }
+        matches_1d.push(current);
+    }
+    let mut word_vectors: Vec<&Word1D> = Vec::new();
+    for i in 0..matches_1d.len() {
+        word_vectors.push(&matches_1d[i]);
+    }
+    println!("Words found, {:?}", matches_1d.len());
+    let solution: Vec<&Word1D> = Vec::new();
+    let res = find_solution(word_vectors, &solution, &mut [false; 30], max_count);
     for i in 0..res.len() {
         println!("Result #{:?}", i);
+        println!("{:?}", res[i]);
         for w in res[i].clone() {
-            println!("{:?}", w.word);
-            print_board(&board, &w.path)
+            print_board(&board, w);
         }
         print!("\n");
     }

@@ -56,6 +56,19 @@ mod tests {
         assert_eq!(3, get_neighbors(&Pos { x: 1, y: 0 }, &visited).len());
         assert_eq!(3, get_neighbors(&Pos { x: 1, y: 1 }, &visited).len());
     }
+    #[test]
+    fn edges_3() {
+        let visited = build_visited(3, 3);
+        assert_eq!(3, get_neighbors(&Pos { x: 0, y: 0 }, &visited).len());
+        assert_eq!(5, get_neighbors(&Pos { x: 0, y: 1 }, &visited).len());
+        assert_eq!(3, get_neighbors(&Pos { x: 0, y: 2 }, &visited).len());
+        assert_eq!(5, get_neighbors(&Pos { x: 1, y: 0 }, &visited).len());
+        assert_eq!(8, get_neighbors(&Pos { x: 1, y: 1 }, &visited).len());
+        assert_eq!(5, get_neighbors(&Pos { x: 1, y: 2 }, &visited).len());
+        assert_eq!(3, get_neighbors(&Pos { x: 2, y: 0 }, &visited).len());
+        assert_eq!(5, get_neighbors(&Pos { x: 2, y: 1 }, &visited).len());
+        assert_eq!(3, get_neighbors(&Pos { x: 2, y: 2 }, &visited).len());
+    }
 
     #[test]
     fn visited() {

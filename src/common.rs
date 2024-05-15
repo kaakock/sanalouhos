@@ -1,3 +1,5 @@
+use core::panic;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Pos {
     pub x: i32,
@@ -10,17 +12,19 @@ pub struct Word {
     pub word: String,
 }
 
-pub fn print_board(board: &Vec<Vec<char>>, highlight: &Vec<Pos>) {
+pub type Word1D = [bool; 30];
+
+pub fn print_board(board: &Vec<Vec<char>>, highlight: Word1D) {
+    let mut word = String::new();
     for j in 0..board.len() {
         let mut row = String::new();
         for i in 0..board[j].len() {
-            let convert_uppercase = highlight.contains(&Pos {
-                x: i32::try_from(i).unwrap(),
-                y: i32::try_from(j).unwrap(),
-            });
+            let index= get_index(board.len(), board.get(0).unwrap().len(), j, i);
+            let convert_uppercase = highlight[index];
             let char = board[j][i];
             if convert_uppercase {
                 char.to_uppercase().for_each(|m| row.push(m));
+                char.to_uppercase().for_each(|m| word.push(m));
             } else {
                 char.to_lowercase().for_each(|m| row.push(m));
             }
@@ -28,6 +32,7 @@ pub fn print_board(board: &Vec<Vec<char>>, highlight: &Vec<Pos>) {
         }
         println!("{:?}", row)
     }
+    println!(" ## {} ## ", word);
 }
 pub fn print_visited(board: &Vec<Vec<bool>>) {
     println!("Visited:");
@@ -64,4 +69,11 @@ pub fn sort_result(a: &Vec<Word>) -> Vec<Word> {
     let mut as_vec: Vec<Word> = a.clone();
     as_vec.sort_by_cached_key(|x| path_to_string(&x.path));
     return as_vec;
+}
+
+pub fn get_index(rows: usize, cols: usize, y: usize, x: usize) -> usize {
+    if x >= cols || y >= rows {
+        panic!("Cannot get index");
+    }
+    return cols * y + x;
 }
