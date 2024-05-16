@@ -58,43 +58,33 @@ fn inner(
     let y = usize::try_from(pos.y).unwrap();
     let current_word = initial_word + &board[y][x].to_string();
     let mut results: Vec<Word> = Vec::new();
-    let matches: Vec<String> = words
-        .clone()
-        .into_iter()
-        .filter(|word| word.to_uppercase().eq(&current_word.to_uppercase()))
-        .collect();
-    if !matches.is_empty() {
-        let word = matches.first().unwrap().to_string();
-        results.push(Word {
-            path: path.to_vec(),
-            word,
-        });
+    // Check exact matches
+    for w in words.iter() {
+        if *w == current_word {
+            results.push(Word {
+                path: path.to_vec(),
+                word: w.to_string(),
+            });
+            break;
+        }
     }
-    // println!("Matches: {:?}", matches);
     for neighbor in get_neighbors(pos, &visited) {
         let mut inner_visited = visited.clone();
         let x = usize::try_from(neighbor.x).unwrap();
         let y = usize::try_from(neighbor.y).unwrap();
-        // println!("X: {:?}, Y: {:?}", x, y);
-        inner_visited[y][x] = true;
-        let inner_word = current_word.clone();
-        let mut inner_words: Vec<String> = words.clone();
-        // println!("inner words 0: {:?}", inner_words.get(0).unwrap());
-        inner_words = inner_words
-            .into_iter()
-            .filter(|word| word.to_uppercase().starts_with(&inner_word.to_uppercase()))
-            .collect();
-        // println!("inner word: {:?}", inner_word);
-        // println!(
-        //     "inner words after
-        // : {:?}",
-        //     inner_words.len()
-        // );
         let mut inner_path = path.clone();
         inner_path.push(Pos {
             x: neighbor.x,
             y: neighbor.y,
         });
+        inner_visited[y][x] = true;
+        let inner_word = current_word.clone();
+        let mut inner_words: Vec<String> = Vec::new();
+        for w in words.iter() {
+            if w.starts_with(&current_word) {
+                inner_words.push(w.to_string());
+            }
+        }
         if inner_words.len() > 0 {
             let mut neighbor_results = inner(
                 board,
@@ -274,7 +264,12 @@ fn main() {
         word_search_duration.as_millis()
     );
     let solution: Vec<&Word1D> = Vec::new();
+    let solution_search_start = Instant::now();
     let res = find_solution(word_vectors, &solution, &u32::MIN, max_count);
+    println!(
+        "Solutions found in {} milliseconds",
+        Instant::now().duration_since(solution_search_start).as_millis(),
+    );
     for i in 0..res.len() {
         println!("Result #{:?}", i);
         for w in res[i].clone() {
