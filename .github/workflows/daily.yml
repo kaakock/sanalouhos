@@ -3,25 +3,37 @@ name: Run-Daily
 on:
   workflow_dispatch:
   schedule:
-  # Run at 00:15 UTC+3
-    - cron: '15 3 * * *'
+    # Run at 00:15 UTC+3
+    - cron: "15 3 * * *"
 
 jobs:
   run-script:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2 
-    - run: rustup update stable && rustup default stable
-    - name: Build release
-      run: cargo build --release
-    - name: Run sanalouhos
-      run: cargo run --release 1000 > results.txt
-    - name: Print response
-      run: cat results.txt
-    - name: Build website
-      run: | 
-        cat results.txt | grep "##.*##" | awk -F'##' '{print $2}' | sort | uniq -c | sort -nr | awk '{print $2 "," $1}' | paste -sd ';' - > counts.txt
-        sed -e "s/\${word_list}/$(cat counts.txt)/" page_template.html > index.html
-    - name: Echo website html
-      run: cat index.html
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: rustup update stable && rustup default stable
+      - name: Build release
+        run: cargo build --release
+      - name: Run sanalouhos
+        run: cargo run --release 1000 > results.txt
+      - name: Print response
+        run: cat results.txt
+      - name: Build website
+        run: |
+          cat results.txt | grep "##.*##" | awk -F'##' '{print $2}' | sort | uniq -c | sort -nr | awk '{print $2 "," $1}' | paste -sd ';' - > counts.txt
+          mkdir pages
+          sed -e "s/\${word_list}/$(cat counts.txt)/" page_template.html > pages/index.html
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload only index html 
+          path: "./index.html"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
