@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Sanalouhos</title>
+</head>
+
+<body>
+    <p>Tarkista onko löytämäsi sana käytössä Sanalouhoksen vastauksessa</p>
+    <input id="query" type="text">
+    <input id="check-word" value="Tarkasta!" type="button">
+
+    <div id="results"></div>
+    <script>
+        let words = "${word_list}"
+        let query = document.getElementById("query");
+        function clearResults() {
+            let resultE = document.getElementById("results");
+            resultE.innerHTML = '';
+        }
+        function displayResults(str) {
+            let resultE = document.getElementById("results");
+            let e = document.createElement("p",);
+            e.innerText = str;
+            resultE.appendChild(e);
+        }
+        document.getElementById("check-word").addEventListener("click", function () {
+            clearResults();
+            let value = query.value.trim().toUpperCase();
+            let result = words.split(";").map(word => word.split(",")).filter(a => a[0] === value);
+            if (result.length === 0) {
+                displayResults(`Sana: ${value} ei ole käytössä yhdessäkään vastauksessa`)
+            } else {
+                displayResults(`Sana: ${result[0][0]} on käytössä ${result[0][1]} vastauksessa`)
+            }
+        }); 
+    </script>
+</body>
+
+</html>

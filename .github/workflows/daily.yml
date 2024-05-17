@@ -16,4 +16,12 @@ jobs:
     - name: Build release
       run: cargo build --release
     - name: Run sanalouhos
-      run: cargo run --release 1000
+      run: cargo run --release 1000 > results.txt
+    - name: Print response
+      run: cat results.txt
+    - name: Build website
+      run: | 
+        cat results.txt | grep "##.*##" | awk -F'##' '{print $2}' | sort | uniq -c | sort -nr | awk '{print $2 "," $1}' | paste -sd ';' - > counts.txt
+        sed -e "s/\${word_list}/$(cat counts.txt)/" page_template.html > index.html
+    - name: Echo website html
+      run: cat index.html
