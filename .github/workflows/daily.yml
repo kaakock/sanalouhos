@@ -16,4 +16,4 @@ jobs:
     - name: Build release
       run: cargo build --release
     - name: Run sanalouhos
-      run: cargo run --release
+      run: cargo run --release 1000
