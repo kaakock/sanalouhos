@@ -29,14 +29,13 @@ jobs:
       - name: Build website
         run: |
           cat results.txt | grep "##.*##" | awk -F'##' '{print $2}' | sort | uniq -c | sort -nr | awk '{print $2 "," $1}' | paste -sd ';' - > counts.txt
-          mkdir pages
           sed -e "s/\${word_list}/$(cat counts.txt)/" page_template.html > pages/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload only index html 
+          # Upload pages folder 
           path: "./pages"
       - name: Deploy to GitHub Pages
         id: deployment

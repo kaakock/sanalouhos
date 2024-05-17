@@ -2,15 +2,27 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <title>Sanalouhos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- or any of these methods: https://asvvvad.github.io/mono-color/#switching-theme -->
+    <link rel="stylesheet" href="light.min.css" media="">
+    <link rel="stylesheet" href="dark.min.css" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="mono.min.css">
 </head>
 
 <body>
-    <p>Tarkista onko löytämäsi sana käytössä Sanalouhoksen vastauksessa</p>
-    <input id="query" type="text">
-    <input id="check-word" value="Tarkasta!" type="button">
+    <div class="container">
+        <div class="content">
+            <header>
+                <h3>Tarkista onko löytämäsi sana käytössä Sanalouhoksen vastauksessa</h3>
+            </header>
+            <input id="query" type="text">
+            <input id="check-word" value="Tarkasta!" type="button">
 
-    <div id="results"></div>
+            <div id="results"></div>
+        </div>
+    </div>
     <script>
         let words = "${word_list}"
         let query = document.getElementById("query");
