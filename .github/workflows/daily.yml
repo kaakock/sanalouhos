@@ -3,8 +3,8 @@ name: Run-Daily
 on:
   workflow_dispatch:
   schedule:
-    # Run at 00:15 UTC+3
-    - cron: "15 3 * * *"
+    # Run at 00:05 UTC+3
+    - cron: "5 3 * * *"
 
 jobs:
   run-script:
