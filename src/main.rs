@@ -1,5 +1,6 @@
 mod common;
 mod neighbors;
+mod requests;
 
 use csv::ReaderBuilder;
 use std::env;
@@ -7,9 +8,11 @@ use std::error::Error;
 use std::fs::{read_to_string, File};
 use std::path::Path;
 use std::time::Instant;
+use chrono::{DateTime, Datelike, FixedOffset, Utc};
 
-use common::{Pos, Word, Word1D};
+use common::{Pos, Word, Word1D, COLS, ROWS};
 use neighbors::get_neighbors;
+use requests::fetch_board_for_date;
 
 use crate::common::{get_index, print_board};
 
@@ -32,18 +35,14 @@ fn read_csv<P: AsRef<Path>>(filename: P) -> Result<Vec<String>, Box<dyn Error>> 
     Ok(results)
 }
 
-fn read_board<P: AsRef<Path>>(filename: P) -> Result<Vec<Vec<char>>, Box<dyn Error>> {
-    let mut results: Vec<Vec<char>> = Vec::new();
-    let data_res = read_to_string(filename);
-    let data: Vec<String> = match data_res {
-        Ok(d) => d.split("\n").map(|x| x.to_owned()).collect(),
-        Err(err) => panic!("{:?}", err),
-    };
-    for line in data {
-        let letters: Vec<char> = line.chars().collect();
-        results.push(letters);
+fn build_board(data: Vec<char>) -> Vec<Vec<char>> {
+    let mut res: Vec<Vec<char>> = vec![vec!['X'; COLS]; ROWS];
+    for j in 0..ROWS {
+        for i in 0..COLS {
+            res[j][i] = data[j * COLS + i].to_uppercase().next().unwrap();
+        }
     }
-    Ok(results)
+    return res;
 }
 
 fn inner(
@@ -189,13 +188,22 @@ fn find_solution(
     return results;
 }
 
+fn get_today_string() -> String {
+    let now = Utc::now();
+    let offset = FixedOffset::east_opt(10800).unwrap();
+    let today: DateTime<FixedOffset> = DateTime::from_naive_utc_and_offset(now.naive_utc(), offset);
+    let day = today.day();
+    let month = today.month();
+    let year = today.year();
+    return String::from(day.to_string() + "." + &month.to_string() + "." + &year.to_string());
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-
     let mut word_list_path: String =
         String::from("/Users/kaarlokock/projects/sanalouhos/sanalista.csv");
-    let mut board_path: String =
-        String::from("/Users/kaarlokock/projects/sanalouhos/board1405.txt");
+    let mut board_date: String =
+        get_today_string();
     let mut max_count: usize = 1usize;
 
     if args.len() > 1 {
@@ -203,14 +211,16 @@ fn main() {
     }
 
     if args.len() > 2 {
-        board_path = args[2].to_string();
-    }
-    if args.len() > 3 {
-        max_count = usize::from_str_radix(&args[3].to_string(), 10).unwrap_or_default();
+        max_count = usize::from_str_radix(&args[2].to_string(), 10).unwrap_or_default();
     }
 
+    if args.len() > 3 {
+        board_date = args[3].to_string();
+    }
+
+
     println!("Searching for {}", word_list_path);
-    println!("In file {}", board_path);
+    println!("In file {}", board_date);
     println!("Max results, {}", max_count);
     let read_res = read_csv(Path::new(&word_list_path));
     let words: Vec<String> = match read_res {
@@ -218,11 +228,9 @@ fn main() {
         Err(err) => panic!("Problem opening file, {:?}", err),
     };
     println!("Found {:?} words from the static word list", words.len());
-    let board_res = read_board(Path::new(&board_path));
-    let board = match board_res {
-        Ok(data) => data,
-        Err(err) => panic!("Problem reading board, {:?}", err),
-    };
+    let maybe_board_data = fetch_board_for_date(&board_date);
+    println!("{:?}", maybe_board_data);
+    let board = build_board(maybe_board_data);
 
     let mut matches: Vec<Word> = Vec::new();
     println!("Searching for all available words for this board");

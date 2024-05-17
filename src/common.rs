@@ -14,6 +14,9 @@ pub struct Word {
 
 pub type Word1D = u32;
 
+pub static COLS: usize = 5;
+pub static ROWS: usize = 6;
+
 pub fn print_board(board: &Vec<Vec<char>>, highlight: Word1D) {
     for j in 0..board.len() {
         let mut row = String::new();
