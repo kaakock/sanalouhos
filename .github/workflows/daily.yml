@@ -23,7 +23,7 @@ jobs:
       - name: Build release
         run: cargo build --release
       - name: Run sanalouhos
-        run: cargo run --release 1000 > results.txt
+        run: cargo run --release 10000 > results.txt
       - name: Print response
         run: cat results.txt
       - name: Build website
