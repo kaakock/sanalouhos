@@ -1,4 +1,4 @@
-#Sanalouhos solver#
+# Sanalouhos solver #
 
 Sanaluouhos is a puzzle by [Helsingin Sanomat](https://hs.fi/pelit/sanalouhos).
 Sometimes it might be a bit too hairy to solve and in the past it didn't use to have a mechanism for getting help when you are stuck.
