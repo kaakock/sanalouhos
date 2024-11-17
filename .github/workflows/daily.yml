@@ -3,8 +3,9 @@ name: Run-Daily
 on:
   workflow_dispatch:
   schedule:
-    # Run at 00:01 UTC+3
-    - cron: "1 21 * * *"
+    # Dirty fix to ensure summer time is handled correctly:
+    # Run at 00:01 UTC+2 and 01:01 UTC+3
+    - cron: "1 22 * * *"
 
 jobs:
   run-script:
@@ -35,7 +36,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload pages folder 
+          # Upload pages folder
           path: "./pages"
       - name: Deploy to GitHub Pages
         id: deployment
