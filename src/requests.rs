@@ -22,7 +22,7 @@ fn parse_board_res(res: &mut Response) -> Vec<char> {
     let mut body = String::new();
     let _ = res.read_to_string(&mut body);
     let deserialized: BoardBody = serde_json::from_str(&body).unwrap();
-    return deserialized.item.game_char_array
+    return deserialized.item.game_char_array;
 }
 
 // date is formatted as D(D).M(M).YYYY
@@ -35,5 +35,9 @@ pub fn fetch_board_for_date(date: &str) -> Vec<char> {
         Ok(mut r) => parse_board_res(&mut r),
         Err(_) => todo!(),
     };
-    return char_array;
+    // map to uppercase should work also with non-ascii characters
+    return char_array
+        .into_iter()
+        .map(|x| x.to_uppercase().next().unwrap())
+        .collect();
 }

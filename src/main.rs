@@ -16,11 +16,11 @@ use crate::{
     common::{get_index, print_board}, find_all_words::find_words_starting_from, find_solution::solve, kotus::read_csv
 };
 
-fn build_board(data: Vec<char>) -> Vec<Vec<char>> {
+fn build_board(data: &Vec<char>) -> Vec<Vec<char>> {
     let mut res: Vec<Vec<char>> = vec![vec!['X'; COLS]; ROWS];
     for j in 0..ROWS {
         for i in 0..COLS {
-            res[j][i] = data[j * COLS + i].to_uppercase().next().unwrap();
+            res[j][i] = data[j * COLS + i];
         }
     }
     return res;
@@ -35,6 +35,27 @@ fn get_today_string() -> String {
     let month = today.month();
     let year = today.year();
     return String::from(day.to_string() + "." + &month.to_string() + "." + &year.to_string());
+}
+
+fn filter_words(words: &Vec<String>, allowed_chars: &Vec<char>) -> Vec<String> {
+    let mut res: Vec<String> = Vec::new();
+    for word in words {
+        let mut valid = true;
+        let word_size = word.len();
+        if (word_size < 3) || (word_size > 10) {
+            continue;
+        }
+        for c in word.chars() {
+            if !allowed_chars.contains(&c) {
+                valid = false;
+                break;
+            }
+        }
+        if valid {
+            res.push(word.clone());
+        }
+    }
+    return res;
 }
 
 fn main() {
@@ -58,8 +79,11 @@ fn main() {
         Err(err) => panic!("Problem opening file, {:?}", err),
     };
     println!("Found {:?} words from the static word list", words.len());
-    let maybe_board_data = fetch_board_for_date(&board_date);
-    let board = build_board(maybe_board_data);
+    let board_chars = fetch_board_for_date(&board_date);
+    let board = build_board(&board_chars);
+    println!("Allowed characters, {:?}", board_chars);
+    let filtered_words = filter_words(&words, &board_chars);
+    println!("Filtered words, {:?}", filtered_words.len());
     print_board(&board, u32::MAX);
     let mut matches: Vec<Word> = Vec::new();
     println!("Searching for all available words for this board");
@@ -68,7 +92,7 @@ fn main() {
         let row = &board[j];
         for i in 0..row.len() {
             let pos = Pos { x: i, y: j };
-            let mut inner_matches = find_words_starting_from(&board, &words, pos);
+            let mut inner_matches = find_words_starting_from(&board, &filtered_words, pos);
             matches.append(&mut inner_matches);
         }
     }
