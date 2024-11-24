@@ -19,10 +19,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
       - run: rustup update stable && rustup default stable
+
+      - name: Check for src changes
+        id: check-changes
+        run: |
+          if git diff --quiet HEAD HEAD~1 -- src; then
+            echo "No changes in src directory."
+            echo "::set-output name=build-needed::false"
+          else
+            echo "Changes detected in src directory."
+            echo "::set-output name=build-needed::true"
+          fi
+
+      - name: Restore Cargo cache
+        uses: actions/cache@v3
+        id: cargo-cache
+        with:
+          path: target/release
+          key: cargo-build-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            cargo-build-${{ github.ref_name }}-
+
       - name: Build release
+        if: ${{ steps.check-changes.outputs.build-needed == 'true' }}
         run: cargo build --release
+
+      - name: Ensure binary exists
+        if: ${{ steps.check-changes.outputs.build-needed == 'false' }}
+        run: |
+          if [ ! -f target/release/sanalouhos ]; then
+            echo "Binary not found in cache. Building it now."
+            cargo build --release
+          fi
+
       - name: Run sanalouhos
         run: cargo run --release 10000 > results.txt
       - name: Print response
