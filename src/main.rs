@@ -20,7 +20,7 @@ fn build_board(data: &Vec<char>) -> Vec<Vec<char>> {
     let mut res: Vec<Vec<char>> = vec![vec!['X'; COLS]; ROWS];
     for j in 0..ROWS {
         for i in 0..COLS {
-            res[j][i] = data[j * COLS + i];
+            res[j][i] = data[j * COLS + i]; 
         }
     }
     return res;

@@ -6,11 +6,11 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/sanalouhos",
-            "args": ["${workspaceFolder}/sanalista.csv", "${workspaceFolder}/board4.txt", "1"],
+            "args": ["1"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "cargo": {
-                "args": ["run"]
+                "args": ["build"]
             },
             "sourceLanguages": ["rust"]
         }
