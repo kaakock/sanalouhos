@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Run sanalouhos
-        run: cargo run --release 10000 > results.txt
+        run: ./target/release/sanalouhos 10000 > results.txt
       - name: Print response
         run: cat results.txt
       - name: Build website
