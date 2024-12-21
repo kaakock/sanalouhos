@@ -41,7 +41,7 @@ fn filter_words(words: &Vec<String>, allowed_chars: &Vec<char>) -> Vec<String> {
     let mut res: Vec<String> = Vec::new();
     for word in words {
         let mut valid = true;
-        let word_size = word.len();
+        let word_size = word.chars().count();
         if (word_size < 3) || (word_size > 10) {
             continue;
         }
